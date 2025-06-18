@@ -1,56 +1,71 @@
-import argparse
-import jsonlines
 from ragengine import RAGEngine
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+import jsonlines
 
-def load_corpus(jsonl_path):
-    with jsonlines.open(jsonl_path) as reader:
+# Load LLM
+tokenizer = AutoTokenizer.from_pretrained("HuggingFaceH4/zephyr-7b-beta")
+model = AutoModelForCausalLM.from_pretrained("HuggingFaceH4/zephyr-7b-beta", device_map="auto", torch_dtype="auto")
+rag_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
+
+# Load corpora
+def load_jsonl(file_path):
+    with jsonlines.open(file_path, "r") as reader:
         return list(reader)
 
-def display_results(results, general_corpus, sher_corpus):
-    print("\n✨ Top Combined Results:\n")
-    for i, result in enumerate(results):
-        source = result.get("source", "unknown")
-        idx = result['index']
-        corpus = general_corpus if source == "Lucknow (The capital of Oudh)" else sher_corpus
-        chunk_data = corpus[idx]
+general_corpus = load_jsonl("data/corpus_general.jsonl")
+sher_corpus = load_jsonl("data/corpus_sher.jsonl")
 
-        print(f"\n🔹 Result {i + 1}")
-        print(f"📌 Topic: {chunk_data.get('topic_name', 'N/A')}")
-        print(f"📁 Source: {chunk_data.get('source', 'Unknown')}")
-        print(f"📄 Text:\n{chunk_data['chunk']}")
-        print(f"🎯 Score: {result['score']:.4f}")
+# Build LLM Prompt
+def build_prompt(query, enriched_results):
+    context = "\n\n".join([f"{i+1}. {item}" for i, item in enumerate(enriched_results)])
+    return f"""You are an assistant trained on Urdu poetry and the cultural history of Lucknow.
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("query", help="Query to search for")
-    args = parser.parse_args()
+📚 Context:
+{context}
 
-    # Load both RAG engines
-    engine_general = RAGEngine("data\general_index.index", "data\general_index_meta.json")
-    engine_sher = RAGEngine("data\shers_index.index", "data\shers_index_meta.json")
+❓ Question:
+{query}
 
-    # Load corpora
-    corpus_general = load_corpus("data\corpus_general.jsonl")
-    corpus_sher = load_corpus("data\corpus_sher.jsonl")
+🧠 Answer:"""
 
-    # Search both
-    results_general = engine_general.search(args.query, top_k=5)
-    results_sher = engine_sher.search(args.query, top_k=5)
+# Extract actual chunks using metadata
+def enrich_results_with_chunks(results, general_corpus, sher_corpus):
+    enriched_chunks = []
+    for result in results:
+        idx = result.get("index", 0)
+        corpus_type = result.get("corpus")
 
-    # Add index & source labels
-    for i, r in enumerate(results_general):
-        r['index'] = i
-        r['source'] = "Lucknow (The capital of Oudh)"
+        if corpus_type == "general":
+            chunk = general_corpus[idx]["chunk"]
+        elif corpus_type == "sher":
+            chunk = sher_corpus[idx]["chunk"]
+        else:
+            chunk = "[Unknown corpus]"
 
-    for i, r in enumerate(results_sher):
-        r['index'] = i
-        r['source'] = "Sher (Ghazal Corpus)"
+        enriched_chunks.append(chunk)
+    return enriched_chunks
 
-    # Combine and sort by score
-    combined_results = sorted(results_general + results_sher, key=lambda x: x['score'])
+# Final LLM-based answer generator
+def answer_query(query, combined_results, general_corpus, sher_corpus):
+    enriched_chunks = enrich_results_with_chunks(combined_results, general_corpus, sher_corpus)
+    prompt = build_prompt(query, enriched_chunks)
+    output = rag_pipeline(prompt, max_new_tokens=300, do_sample=True, temperature=0.7)[0]['generated_text']
+    return output.split("🧠 Answer:")[-1].strip()
 
-    # Display
-    display_results(combined_results, corpus_general, corpus_sher)
-
+# === Main logic ===
 if __name__ == "__main__":
-    main()
+    query = input("❓ Ask your question: ")
+
+    general_rag = RAGEngine("data/general_index.index", "data/general_index_meta.json")
+    sher_rag = RAGEngine("data/shers_index.index", "data/shers_index_meta.json")
+
+    general_results = general_rag.search(query, top_k=5)
+    sher_results = sher_rag.search(query, top_k=5)
+
+    combined_results = general_results + sher_results
+
+    final_response = answer_query(query, combined_results, general_corpus, sher_corpus)
+
+    print("\n🧠 Final Answer:\n")
+    print(final_response)
+

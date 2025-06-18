@@ -37,13 +37,24 @@ def build_index(json_file, index_file, model_name="all-MiniLM-L6-v2"):
     with jsonlines.open(json_file) as reader:
         print(f"📂 Reading from: {json_file}")
         data = list(reader)
+        i=0
         for item in data:
-            texts.append(item['chunk'])
+            if "Rekhta - " in item["source"]:
+                poet_name = item["source"].split("Rekhta - ")[-1].strip()
+            else:
+                poet_name = item["source"].strip()
+            chunk=item['chunk']    
+            full_text = f"{poet_name} {chunk}".strip()
+            texts.append(full_text)
             # if len(texts.split()) < 20:  # Skip short irrelevant chunks
             #     continue
             # if "library" in texts.lower() or "copyright" in texts.lower():
             #     continue
-            metadata.append({k: v for k, v in item.items() if k != 'chunk'})
+            meta={k: v for k, v in item.items() if k != 'chunk'}
+            meta['index'] = i  # also useful later
+            meta['corpus'] = 'sher'  # or 'sher', depending on which file you're processing
+            metadata.append(meta)
+            i=i+1
 
     print("⚙️ Encoding embeddings...")
     embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
@@ -62,6 +73,6 @@ def build_index(json_file, index_file, model_name="all-MiniLM-L6-v2"):
         json.dump(metadata, f, ensure_ascii=False)
         print(f"✅ Metadata saved to: {index_file.replace('.index', '_meta.json')}")
 
-build_index("data\corpus_general.jsonl", "data\general_index.index")
-build_index("data\corpus_sher.jsonl", "data\shers_index.index")        
+build_index("data\corpus_sher.jsonl", "data\shers_index.index")
+
 
