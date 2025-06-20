@@ -12,7 +12,7 @@ class RAGEngine:
         print(f"[*] Loading metadata from {metadata_path}...")
         with open(metadata_path,encoding='utf-8') as f:
             self.metadata=json.load(f)
-    def search(self,query,top_k=5):
+    def search(self,query,top_k=2):
         print("[*] Encoding query....")
         query_embedding=self.model.encode([query],convert_to_numpy=True)
         
