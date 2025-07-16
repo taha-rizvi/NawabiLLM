@@ -32,38 +32,52 @@ import numpy as np
 def build_index(json_file, index_file, model_name="all-MiniLM-L6-v2"):
     model = SentenceTransformer(model_name)
     texts = []
-    metadata = []
+    metadata=[]
 
     with jsonlines.open(json_file) as reader:
         print(f"📂 Reading from: {json_file}")
-        data = list(reader)
-        i=0
+        data=list(reader)
         for item in data:
-            if "Rekhta - " in item["source"]:
-                poet_name = item["source"].split("Rekhta - ")[-1].strip()
-            else:
-                poet_name = item["source"].strip()
-            chunk=item['chunk']    
-            full_text = f"{poet_name} {chunk}".strip()
-            texts.append(full_text)
+            prompt=item["prompt"]
+            response=item["response"]
+            if '?' in prompt:
+                intent=prompt.split('?')[0].strip()+'?'
+                sher=prompt.split('?')[1].strip()
+            else: 
+                intent=prompt
+                sher=""    
+            combined=f"{intent}|{sher}"
+            texts.append(combined)
+            metadata.append(response)
+
+        # data = list(reader)
+        # i=0
+        # for item in data:
+        #     if "Rekhta - " in item["source"]:
+        #         poet_name = item["source"].split("Rekhta - ")[-1].strip()
+        #     else:
+        #         poet_name = item["source"].strip()
+        #     chunk=item['chunk']    
+        #     full_text = f"{poet_name} {chunk}".strip()
+        #     texts.append(full_text)
             # if len(texts.split()) < 20:  # Skip short irrelevant chunks
             #     continue
             # if "library" in texts.lower() or "copyright" in texts.lower():
             #     continue
-            meta={k: v for k, v in item.items() if k != 'chunk'}
-            meta['index'] = i  # also useful later
-            meta['corpus'] = 'sher'  # or 'sher', depending on which file you're processing
-            metadata.append(meta)
-            i=i+1
+            # meta={k: v for k, v in item.items() if k != 'chunk'}
+            # meta['index'] = i  # also useful later
+            # meta['corpus'] = 'sher'  # or 'sher', depending on which file you're processing
+            # metadata.append(meta)
+            # i=i+1
 
     print("⚙️ Encoding embeddings...")
     embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
 
     # 🔥 Normalize to unit length for cosine similarity
-    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+    # embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
 
-    print("📦 Building FAISS index with cosine similarity...")
-    index = faiss.IndexFlatIP(embeddings.shape[1])  # Use Inner Product
+    # print("📦 Building FAISS index with cosine similarity...")
+    index = faiss.IndexFlatL2(embeddings.shape[1])  # Use Inner Product
     index.add(embeddings)
 
     faiss.write_index(index, index_file)
@@ -73,6 +87,6 @@ def build_index(json_file, index_file, model_name="all-MiniLM-L6-v2"):
         json.dump(metadata, f, ensure_ascii=False)
         print(f"✅ Metadata saved to: {index_file.replace('.index', '_meta.json')}")
 
-build_index("data\corpus_sher.jsonl", "data\shers_index.index")
+build_index("data/combined_corpus.jsonl","data/index_combined_corpus.index")
 
 

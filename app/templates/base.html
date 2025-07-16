@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}NawabiLLM{% endblock %}</title>
+
+    <!-- Bootstrap CDN for responsiveness -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome for send icon -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <style>
+      body {
+        background: linear-gradient(to right, #f3e7e9, #e3eeff);
+        font-family: "Georgia", serif;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .chat {
+        margin-top: 50px;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .msg_head {
+        background-color: #a663cc;
+        color: white;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        padding: 15px 20px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .user_info span {
+        font-weight: bold;
+        font-size: 1.3rem;
+      }
+
+      .msg_card_body {
+        overflow-y: auto;
+        height: 500px;
+        background: #fdf8f0;
+        padding: 20px;
+      }
+
+      .msg_cotainer_send {
+        max-width: 60%;
+        background-color: #e7dcf9;
+        border-radius: 20px;
+        padding: 12px 20px;
+        margin-left: auto;
+        font-size: 1rem;
+        font-style: italic;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .msg_cotainer {
+        max-width: 60%;
+        background-color: #fff3cd;
+        border-radius: 20px;
+        padding: 12px 20px;
+        margin-right: auto;
+        font-size: 1rem;
+        font-weight: 500;
+        font-style: italic;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .card-footer {
+        background-color: #fafafa;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        padding: 15px;
+      }
+
+      .type_msg {
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        width: 100%;
+        background-color: #f4f4f4;
+        font-style: italic;
+      }
+
+      .send_btn {
+        background-color: #a663cc;
+        border: none;
+        color: white;
+        border-radius: 50%;
+        padding: 10px 15px;
+        margin-left: 10px;
+      }
+
+      .send_btn:hover {
+        background-color: #8d4cbf;
+      }
+
+      .online_icon {
+        background-color: #4cd137;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-left: 5px;
+      }
+
+      .img_cont {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 15px; /* spacing from the name */
+        border: 3px solid white; /* elegant border around image */
+        z-index: 2; /* sit above the header background */
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .img_cont img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%; /* round image inside container */
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #d6d6d6;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      background: linear-gradient(135deg, #f8f1ff, #fff8f1);
+      font-family: 'Georgia', serif;
+    "
+  >
+    <!-- Nawabi Navbar -->
+    <nav
+      class="navbar navbar-expand-lg shadow-sm"
+      style="background-color: #a663cc"
+    >
+      <div class="container-fluid">
+        <span
+          class="navbar-brand mb-0 h1 text-white fw-bold"
+          style="font-family: 'Georgia', serif; font-size: 1.7rem"
+        >
+          🕌 Nawabi<span style="color: #fcd9a0">LLM</span>
+        </span>
+      </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div
+      class="container mt-5 mb-5 p-4 rounded shadow-sm"
+      style="background-color: #ffffffcc; backdrop-filter: blur(8px)"
+    >
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
