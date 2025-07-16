@@ -1,1 +1,4 @@
 kebabs/
+data/combined_corpus.jsonl
+data/index_combined_corpus.index
+data/index_combined_corpus_meta.json
