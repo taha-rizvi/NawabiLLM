@@ -6,6 +6,11 @@
 
 ---
 
+
+![system design_nawabillm](https://github.com/user-attachments/assets/c88cb96f-268a-476f-b03b-a7b52585f45b)
+
+
+
 ## 🌟 Overview
 
 **NawabiLLM** is a fine-tuned large language model that speaks in Urdu shayari, understands poetic tone and emotion, and can imitate the legendary styles of classical poets like Ghalib, Faiz, and Mir.  
