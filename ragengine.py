@@ -12,7 +12,7 @@ class RAGEngine:
         
         print(f"[*] Loading data from {metadata_path}...")
         with open(metadata_path,"r", encoding="utf-8") as reader:
-            print(f"📂 Reading from: {metadata_path}")
+            print(f" Reading from: {metadata_path}")
             corpus=json.load(reader)
             
             self.data=[item for item in corpus]
@@ -33,13 +33,7 @@ class RAGEngine:
         D, I = self.index.search(query_embedding, top_k) 
         print(self.index.ntotal)
         print(len(self.data))
-        # results = []
+        
         for i in I[0]:
-            
             result = self.data[i]
-            # result["score"] = float(D[0][i])
-            # result["index"] =idx
-            
-            # results.append(result)
-
         return result  

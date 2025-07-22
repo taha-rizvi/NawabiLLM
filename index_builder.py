@@ -1,28 +1,3 @@
-# from sentence_transformers import SentenceTransformer
-# import faiss
-# import json
-# import jsonlines
-
-# def build_index(json_file,index_file,model_name="all-MiniLM-L6-v2"):
-#     model=SentenceTransformer(model_name)
-#     texts=[]
-#     metadata=[]
-#     # with open(json_file,'r',encoding='utf-8') as f:
-#     with jsonlines.open(json_file) as reader:
-#         print(json_file)
-#         data=list(reader)
-#         for item in data:
-
-#             texts.append(item['chunk'])
-#             metadata.append({k:v for k,v in item.items() if k!='chunk'})
-    
-#     embeddings=model.encode(texts,show_progress_bar=True,convert_to_numpy=True)
-#     index=faiss.IndexFlatL2(embeddings.shape[1])
-#     index.add(embeddings)
-#     faiss.write_index(index,index_file)
-#     with open(index_file.replace('.index','_meta.json'),"w",encoding='utf-8') as f:
-#         json.dump(metadata,f,ensure_ascii=False)
-#         print(f"✅ Index saved to {index_file}")
 from sentence_transformers import SentenceTransformer
 import faiss
 import json
@@ -35,7 +10,7 @@ def build_index(json_file, index_file, model_name="all-MiniLM-L6-v2"):
     metadata=[]
 
     with jsonlines.open(json_file) as reader:
-        print(f"📂 Reading from: {json_file}")
+        print(f" Reading from: {json_file}")
         data=list(reader)
         for item in data:
             prompt=item["prompt"]
@@ -50,34 +25,13 @@ def build_index(json_file, index_file, model_name="all-MiniLM-L6-v2"):
             texts.append(combined)
             metadata.append(response)
 
-        # data = list(reader)
-        # i=0
-        # for item in data:
-        #     if "Rekhta - " in item["source"]:
-        #         poet_name = item["source"].split("Rekhta - ")[-1].strip()
-        #     else:
-        #         poet_name = item["source"].strip()
-        #     chunk=item['chunk']    
-        #     full_text = f"{poet_name} {chunk}".strip()
-        #     texts.append(full_text)
-            # if len(texts.split()) < 20:  # Skip short irrelevant chunks
-            #     continue
-            # if "library" in texts.lower() or "copyright" in texts.lower():
-            #     continue
-            # meta={k: v for k, v in item.items() if k != 'chunk'}
-            # meta['index'] = i  # also useful later
-            # meta['corpus'] = 'sher'  # or 'sher', depending on which file you're processing
-            # metadata.append(meta)
-            # i=i+1
+        
 
-    print("⚙️ Encoding embeddings...")
+    print(" Encoding embeddings...")
     embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
 
-    # 🔥 Normalize to unit length for cosine similarity
-    # embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
-
-    # print("📦 Building FAISS index with cosine similarity...")
-    index = faiss.IndexFlatL2(embeddings.shape[1])  # Use Inner Product
+    
+    index = faiss.IndexFlatL2(embeddings.shape[1])  
     index.add(embeddings)
 
     faiss.write_index(index, index_file)
